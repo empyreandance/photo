@@ -112,6 +112,7 @@
             position: relative;
             margin-top: 20px;
             min-height: 500px;
+            width: 100%;
         }
 
         .photo-item {
@@ -512,20 +513,18 @@
             const photoGrid = document.getElementById('photoGrid');
             if (!photoGrid) return;
             
+            // Force the photo grid to use full width by resetting any constraints
+            photoGrid.style.width = '100%';
+            
+            // Get the actual width after ensuring full width
             const containerWidth = photoGrid.offsetWidth;
             
             console.log('Container width:', containerWidth);
             
-            // Original breakpoints - these are correct!
-            if (containerWidth > 1200) {
-                columnCount = 4;
-            } else if (containerWidth > 900) {
-                columnCount = 3;
-            } else if (containerWidth > 600) {
-                columnCount = 2;
-            } else {
-                columnCount = 1;
-            }
+            // Calculate columns based on minimum column width of ~300px (matching landscapes)
+            const minColumnWidth = 300;
+            columnCount = Math.floor((containerWidth + gutter) / (minColumnWidth + gutter));
+            columnCount = Math.max(1, Math.min(4, columnCount));
             
             console.log('Column count:', columnCount);
             
