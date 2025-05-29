@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portraits</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Disable right-click */
+        img {
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 1px solid #222;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        h1 a:hover {
+            opacity: 0.7;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        nav {
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+            display: inline-block;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .content {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Masonry Photo Grid */
+        .photo-grid {
+            position: relative;
+            margin-top: 20px;
+            min-height: 500px;
+        }
+
+        .photo-item {
+            position: absolute;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #111;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+            border: 1px solid #222;
+            opacity: 0;
+        }
+
+        .photo-item.loaded {
+            opacity: 1;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: #444;
+            z-index: 10;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            will-change: transform;
+        }
+
+        /* Loading skeleton */
+        .photo-item.skeleton {
+            background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        .photo-item.skeleton::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
+            border: 3px solid #333;
+            border-top-color: #666;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Loading indicator */
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .lightbox-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            cursor: default;
+        }
+
+        .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 3em;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: 300;
+            z-index: 2001;
+            border-radius: 4px;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-weight: 300;
+            z-index: 2001;
+        }
+
+        .lightbox-close:hover {
+            transform: scale(1.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #222;
+            margin-top: 100px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            nav a {
+                margin: 0 10px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            nav a {
+                margin: 0 8px;
+                font-size: 0.95em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .lightbox-content {
+                padding: 10px;
+            }
+
+            .lightbox-nav {
+                padding: 15px 10px;
+                font-size: 2.5em;
+            }
+
+            .lightbox-prev {
+                left: 10px;
+            }
+
+            .lightbox-next {
+                right: 10px;
+            }
+
+            .lightbox-close {
+                top: 15px;
+                right: 20px;
+                font-size: 2.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav a {
+                margin: 0 5px;
+                font-size: 0.85em;
+            }
+
+            .lightbox-nav {
+                padding: 10px 8px;
+                font-size: 2em;
+            }
+
+            .lightbox-prev {
+                left: 5px;
+            }
+
+            .lightbox-next {
+                right: 5px;
+            }
+
+            .lightbox-close {
+                top: 10px;
+                right: 15px;
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div class="container">
+        <header>
+            <h1><a href="https://www.alexcooke.co">Alex Cooke</a></h1>
+            <p class="subtitle">Photography</p>
+        </header>
+
+        <nav>
+            <a href="aerial.html">Aerial</a>
+            <a href="baseball.html">Baseball</a>
+            <a href="events.html">Events</a>
+            <a href="horses.html">Horses</a>
+            <a href="landscapes.html">Landscapes</a>
+            <a href="portraits.html" class="active">Portraits</a>
+            <a href="weddings.html">Weddings</a>
+            <a href="index.html">About</a>
+        </nav>
+
+        <div class="content">
+            <div class="loading-indicator" id="loadingIndicator">Loading photos...</div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="photo-grid" id="photoGrid">
+                <!-- Photos will be populated here -->
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                <a href="contact.html" style="color: #999; text-decoration: none; border-bottom: 1px solid #444; transition: all 0.3s ease;">Contact Me</a>
+                <span style="margin: 0 20px; color: #444;">•</span>
+                &copy; 2025 Alex Cooke. All rights reserved.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="">
+        </div>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
+        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    </div>
+
+    <script>
+        // Photo configuration - just filenames!
+        const photos = [
+           "portraits-84.jpg",
+            "portraits-78.jpg",
+            "portraits-62.jpg",
+            "portraits-39.jpg",
+            "portraits-72.jpg",
+            "portraits-47.jpg",
+            "portraits-28.jpg",
+            "portraits-15.jpg",
+            "portraits-8.jpg",
+            "portraits-87.jpg",
+            "portraits-68.jpg",
+            "portraits-4.jpg",
+            "portraits-80.jpg",
+            "portraits-63.jpg",
+            "portraits-42.jpg",
+            "portraits-40.jpg",
+            "portraits-22.jpg",
+            "portraits-90.jpg",
+            "portraits-32.jpg",
+            "portraits-5.jpg",
+            "portraits-45.jpg",
+            "portraits-11.jpg",
+            "portraits-50.jpg",
+            "portraits-24.jpg",
+            "portraits-46.jpg",
+            "portraits-58.jpg",
+            "portraits-17.jpg",
+            "portraits-59.jpg",
+            "portraits-23.jpg",
+            "portraits-14.jpg",
+            "portraits-77.jpg",
+            "portraits-57.jpg",
+            "portraits-44.jpg",
+            "portraits-9.jpg",
+            "portraits-12.jpg",
+            "portraits-51.jpg",
+            "portraits-83.jpg",
+            "portraits-34.jpg",
+            "portraits-41.jpg",
+            "portraits-67.jpg",
+            "portraits-93.jpg",
+            "portraits-91.jpg",
+            "portraits-82.jpg",
+            "portraits-88.jpg",
+            "portraits-37.jpg",
+            "portraits-65.jpg",
+            "portraits-89.jpg",
+            "portraits-30.jpg",
+            "portraits-75.jpg",
+            "portraits-66.jpg",
+            "portraits-71.jpg",
+            "portraits-18.jpg",
+            "portraits-2.jpg",
+            "portraits-20.jpg",
+            "portraits-56.jpg",
+            "portraits-16.jpg",
+            "portraits-36.jpg",
+            "portraits-35.jpg",
+            "portraits-7.jpg",
+            "portraits-74.jpg",
+            "portraits-10.jpg",
+            "portraits-21.jpg",
+            "portraits-26.jpg",
+            "portraits-61.jpg",
+            "portraits-43.jpg",
+            "portraits-55.jpg",
+            "portraits-48.jpg",
+            "portraits-70.jpg",
+            "portraits-52.jpg",
+            "portraits-85.jpg",
+            "portraits-19.jpg",
+            "portraits-29.jpg",
+            "portraits-81.jpg",
+            "portraits-3.jpg",
+            "portraits-86.jpg",
+            "portraits-92.jpg",
+            "portraits-60.jpg",
+            "portraits-25.jpg",
+            "portraits-76.jpg",
+            "portraits-27.jpg",
+            "portraits-31.jpg",
+            "portraits-49.jpg",
+            "portraits-73.jpg",
+            "portraits-54.jpg",
+            "portraits-13.jpg",
+            "portraits-33.jpg",
+            "portraits-69.jpg",
+            "portraits-38.jpg",
+            "portraits-6.jpg",
+            "portraits-53.jpg",
+            "portraits-64.jpg",
+            "portraits-1.jpg",
+            "portraits-79.jpg"
+        ];
+
+        const photoFolder = "portraits";
+        let currentPhotoIndex = 0;
+        let columnHeights = [];
+        let columnCount = 4;
+        let columnWidth = 0;
+        let gutter = 20;
+        let loadedImages = [];
+        let imagesLoaded = 0;
+        let imagesFailed = 0;
+
+        // Calculate column layout
+        function calculateLayout() {
+            const photoGrid = document.getElementById('photoGrid');
+            if (!photoGrid) return;
+            
+            const containerWidth = photoGrid.offsetWidth;
+            
+            // Determine column count based on screen width
+            if (containerWidth > 1200) {
+                columnCount = 4;
+            } else if (containerWidth > 900) {
+                columnCount = 3;
+            } else if (containerWidth > 600) {
+                columnCount = 2;
+            } else {
+                columnCount = 1;
+            }
+            
+            columnWidth = (containerWidth - (gutter * (columnCount - 1))) / columnCount;
+            columnHeights = new Array(columnCount).fill(0);
+        }
+
+        // Find shortest column
+        function getShortestColumn() {
+            let minHeight = columnHeights[0];
+            let minIndex = 0;
+            
+            for (let i = 1; i < columnHeights.length; i++) {
+                if (columnHeights[i] < minHeight) {
+                    minHeight = columnHeights[i];
+                    minIndex = i;
+                }
+            }
+            
+            return minIndex;
+        }
+
+        // Load photos with better error handling
+        function loadPhotos() {
+            console.log('Starting to load photos...');
+            const photoGrid = document.getElementById('photoGrid');
+            if (!photoGrid) {
+                console.error('Photo grid element not found!');
+                return;
+            }
+            
+            photoGrid.innerHTML = '';
+            loadedImages = new Array(photos.length);
+            imagesLoaded = 0;
+            imagesFailed = 0;
+            
+            calculateLayout();
+            
+            // Create all photo items immediately with estimated heights
+            const estimatedAspectRatio = 0.75; // Common portrait aspect ratio
+            const estimatedHeight = columnWidth / estimatedAspectRatio;
+            
+            photos.forEach((photo, index) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item skeleton';
+                photoItem.onclick = () => openLightbox(index);
+                
+                // Position with estimated dimensions
+                const column = getShortestColumn();
+                photoItem.style.width = columnWidth + 'px';
+                photoItem.style.height = estimatedHeight + 'px';
+                photoItem.style.left = column * (columnWidth + gutter) + 'px';
+                photoItem.style.top = columnHeights[column] + 'px';
+                
+                columnHeights[column] += estimatedHeight + gutter;
+                
+                photoGrid.appendChild(photoItem);
+                
+                // Load image in parallel
+                const img = new Image();
+                const imagePath = `${photoFolder}/${photo}`;
+                console.log(`Loading image ${index + 1}/${photos.length}: ${imagePath}`);
+                
+                img.onload = function() {
+                    console.log(`Image loaded successfully: ${photo}`);
+                    
+                    // Hide loading indicator on first image
+                    if (imagesLoaded === 0) {
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                    }
+                    
+                    photoItem.classList.remove('skeleton');
+                    photoItem.appendChild(img);
+                    
+                    loadedImages[index] = {
+                        element: photoItem,
+                        img: img,
+                        aspectRatio: img.naturalWidth / img.naturalHeight
+                    };
+                    
+                    imagesLoaded++;
+                    
+                    // Update progress
+                    updateProgress();
+                    
+                    // Reflow after batch of images
+                    if (imagesLoaded === photos.length || imagesLoaded % 10 === 0) {
+                        reflowImages();
+                    }
+                    
+                    photoItem.classList.add('loaded');
+                };
+                
+                img.onerror = function() {
+                    console.error(`Failed to load image: ${photo}`);
+                    imagesFailed++;
+                    
+                    photoItem.classList.remove('skeleton');
+                    
+                    // Create error placeholder
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.width = '100%';
+                    errorDiv.style.height = '100%';
+                    errorDiv.style.display = 'flex';
+                    errorDiv.style.alignItems = 'center';
+                    errorDiv.style.justifyContent = 'center';
+                    errorDiv.style.color = '#666';
+                    errorDiv.style.fontSize = '14px';
+                    errorDiv.innerHTML = 'Image not found';
+                    
+                    photoItem.appendChild(errorDiv);
+                    
+                    loadedImages[index] = {
+                        element: photoItem,
+                        img: null,
+                        aspectRatio: 0.75
+                    };
+                    
+                    imagesLoaded++;
+                    updateProgress();
+                    
+                    if (imagesLoaded === photos.length) {
+                        reflowImages();
+                    }
+                    
+                    photoItem.classList.add('loaded');
+                };
+                
+                // Set source after event handlers
+                img.src = imagePath;
+            });
+            
+            // Set initial container height
+            const maxHeight = Math.max(...columnHeights);
+            photoGrid.style.height = maxHeight + 'px';
+            
+            // Timeout fallback
+            setTimeout(() => {
+                if (imagesLoaded === 0) {
+                    console.error('No images loaded after 10 seconds');
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                    const errorMsg = document.getElementById('errorMessage');
+                    errorMsg.textContent = 'Unable to load images. Please check that the image files exist in the "portraits" folder.';
+                    errorMsg.style.display = 'block';
+                }
+            }, 10000);
+        }
+
+        // Update progress
+        function updateProgress() {
+            const total = photos.length;
+            const loaded = imagesLoaded;
+            const failed = imagesFailed;
+            
+            console.log(`Progress: ${loaded}/${total} loaded, ${failed} failed`);
+            
+            if (loaded + failed === total && failed > 0) {
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.textContent = `${failed} image(s) failed to load`;
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Reflow all images
+        function reflowImages() {
+            calculateLayout();
+            
+            loadedImages.forEach((item, index) => {
+                if (item && item.element) {
+                    const column = getShortestColumn();
+                    const itemHeight = columnWidth / (item.aspectRatio || 0.75);
+                    
+                    item.element.style.width = columnWidth + 'px';
+                    item.element.style.height = itemHeight + 'px';
+                    item.element.style.left = column * (columnWidth + gutter) + 'px';
+                    item.element.style.top = columnHeights[column] + 'px';
+                    
+                    columnHeights[column] += itemHeight + gutter;
+                }
+            });
+            
+            const maxHeight = Math.max(...columnHeights);
+            document.getElementById('photoGrid').style.height = maxHeight + 'px';
+        }
+
+        // Debounce function for resize events
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Handle window resize
+        const handleResize = debounce(() => {
+            reflowImages();
+        }, 250);
+
+        window.addEventListener('resize', handleResize);
+
+        // Lightbox functions
+        function openLightbox(index) {
+            currentPhotoIndex = index;
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            
+            lightboxImage.src = `${photoFolder}/${photos[index]}`;
+            lightbox.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox(event) {
+            if (event && event.target !== event.currentTarget && 
+                !event.target.classList.contains('lightbox-close')) {
+                return;
+            }
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            currentPhotoIndex += direction;
+            
+            if (currentPhotoIndex < 0) {
+                currentPhotoIndex = photos.length - 1;
+            } else if (currentPhotoIndex >= photos.length) {
+                currentPhotoIndex = 0;
+            }
+            
+            const lightboxImage = document.getElementById('lightboxImage');
+            lightboxImage.src = `${photoFolder}/${photos[currentPhotoIndex]}`;
+            
+            event.stopPropagation();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('lightbox').style.display === 'block') {
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+                if (e.key === 'Escape') closeLightbox();
+            }
+        });
+
+        // Disable drag on images
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+            }
+        });
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadPhotos);
+        } else {
+            // DOM is already loaded
+            loadPhotos();
+        }
+    </script>
+</body>
+</html>
