@@ -507,27 +507,29 @@
         let imagesLoaded = 0;
         let imagesFailed = 0;
         
-        // Replace the calculateLayout function with this:
         function calculateLayout() {
+            const container = document.querySelector('.container');
             const photoGrid = document.getElementById('photoGrid');
-            if (!photoGrid) return;
+            if (!photoGrid || !container) return;
             
-            // Get the actual width of the photo grid
-            const containerWidth = photoGrid.getBoundingClientRect().width;
+            // Use the container's width minus padding to match landscapes layout
+            const containerStyle = window.getComputedStyle(container);
+            const containerPadding = parseFloat(containerStyle.paddingLeft) + parseFloat(containerStyle.paddingRight);
+            const containerWidth = container.getBoundingClientRect().width - containerPadding;
             
             console.log('Container width:', containerWidth);
             
-            // Adjust breakpoints to match actual container sizes
-            // These values account for the container max-width and padding
-            if (containerWidth >= 1000) {
-                columnCount = 4;
-            } else if (containerWidth >= 750) {
-                columnCount = 3;
-            } else if (containerWidth >= 500) {
-                columnCount = 2;
-            } else {
-                columnCount = 1;
-            }
+            // Match the breakpoints to the landscapes grid behavior
+            // The landscapes grid uses minmax(300px, 1fr) which means ~300px per column
+            const minColumnWidth = 300;
+            columnCount = Math.floor((containerWidth + gutter) / (minColumnWidth + gutter));
+            columnCount = Math.max(1, Math.min(4, columnCount)); // Ensure between 1-4 columns
+            
+            console.log('Column count:', columnCount);
+            
+            columnWidth = (containerWidth - (gutter * (columnCount - 1))) / columnCount;
+            columnHeights = new Array(columnCount).fill(0);
+        }
             
             console.log('Column count:', columnCount);
             
