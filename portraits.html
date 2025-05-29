@@ -506,23 +506,24 @@
         let loadedImages = [];
         let imagesLoaded = 0;
         let imagesFailed = 0;
-
-        // Calculate column layout
+        
+        // Replace the calculateLayout function with this:
         function calculateLayout() {
             const photoGrid = document.getElementById('photoGrid');
             if (!photoGrid) return;
             
-            // Force a reflow to get accurate width
+            // Get the actual width of the photo grid
             const containerWidth = photoGrid.getBoundingClientRect().width;
             
             console.log('Container width:', containerWidth);
             
-            // Determine column count based on actual container width
-            if (containerWidth >= 1200) {
+            // Adjust breakpoints to match actual container sizes
+            // These values account for the container max-width and padding
+            if (containerWidth >= 1000) {
                 columnCount = 4;
-            } else if (containerWidth >= 900) {
+            } else if (containerWidth >= 750) {
                 columnCount = 3;
-            } else if (containerWidth >= 600) {
+            } else if (containerWidth >= 500) {
                 columnCount = 2;
             } else {
                 columnCount = 1;
