@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landscapes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Disable right-click */
+        img {
+            pointer-events: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 1px solid #222;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        h1 a:hover {
+            opacity: 0.7;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        nav {
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+            display: inline-block;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .content {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Masonry Photo Grid */
+        .photo-grid {
+            position: relative;
+            margin-top: 20px;
+            min-height: 500px;
+        }
+
+        .photo-item {
+            position: absolute;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #111;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+            border: 1px solid #222;
+            opacity: 0;
+        }
+
+        .photo-item.loaded {
+            opacity: 1;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: #444;
+            z-index: 10;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Loading skeleton */
+        .photo-item.skeleton {
+            background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Loading indicator */
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .lightbox-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            cursor: default;
+        }
+
+        .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 3em;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: 300;
+            z-index: 2001;
+            border-radius: 4px;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3em;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            font-weight: 300;
+            z-index: 2001;
+        }
+
+        .lightbox-close:hover {
+            transform: scale(1.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #222;
+            margin-top: 100px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            nav a {
+                margin: 0 10px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            nav a {
+                margin: 0 8px;
+                font-size: 0.95em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .lightbox-content {
+                padding: 10px;
+            }
+
+            .lightbox-nav {
+                padding: 15px 10px;
+                font-size: 2.5em;
+            }
+
+            .lightbox-prev {
+                left: 10px;
+            }
+
+            .lightbox-next {
+                right: 10px;
+            }
+
+            .lightbox-close {
+                top: 15px;
+                right: 20px;
+                font-size: 2.5em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav a {
+                margin: 0 5px;
+                font-size: 0.85em;
+            }
+
+            .lightbox-nav {
+                padding: 10px 8px;
+                font-size: 2em;
+            }
+
+            .lightbox-prev {
+                left: 5px;
+            }
+
+            .lightbox-next {
+                right: 5px;
+            }
+
+            .lightbox-close {
+                top: 10px;
+                right: 15px;
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <div class="container">
+        <header>
+            <h1><a href="https://www.alexcooke.co">Alex Cooke</a></h1>
+            <p class="subtitle">Photography</p>
+        </header>
+
+        <nav>
+            <a href="aerial.html">Aerial</a>
+            <a href="baseball.html">Baseball</a>
+            <a href="events.html">Events</a>
+            <a href="horses.html">Horses</a>
+            <a href="landscapes.html" class="active">Landscapes</a>
+            <a href="portraits.html">Portraits</a>
+            <a href="weddings.html">Weddings</a>
+            <a href="index.html">About</a>
+        </nav>
+
+        <div class="content">
+            <div class="loading-indicator" id="loadingIndicator">Loading photos...</div>
+            <div class="photo-grid" id="photoGrid">
+                <!-- Photos will be populated here -->
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                <a href="contact.html" style="color: #999; text-decoration: none; border-bottom: 1px solid #444; transition: all 0.3s ease;">Contact Me</a>
+                <span style="margin: 0 20px; color: #444;">•</span>
+                &copy; 2025 Alex Cooke. All rights reserved.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="">
+        </div>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
+        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    </div>
+
+    <script>
+        // Photo configuration - just filenames!
+        const photos = [
+            "landscapes-15.jpg",
+            "landscapes-31.jpg",
+            "landscapes-5.jpg",
+            "landscapes-21.jpg",
+            "landscapes-7.jpg",
+            "landscapes-2.jpg",
+            "landscapes-19.jpg",
+            "landscapes-17.jpg",
+            "landscapes-12.jpg",
+            "landscapes-8.jpg",
+            "landscapes-1.jpg",
+            "landscapes-30.jpg",
+            "landscapes-14.jpg",
+            "landscapes-4.jpg",
+            "landscapes-26.jpg",
+            "landscapes-16.jpg",
+            "landscapes-20.jpg",
+            "landscapes-23.jpg",
+            "landscapes-13.jpg",
+            "landscapes-6.jpg",
+            "landscapes-29.jpg",
+            "landscapes-32.jpg",
+            "landscapes-10.jpg",
+            "landscapes-28.jpg",
+            "landscapes-25.jpg",
+            "landscapes-27.jpg",
+            "landscapes-24.jpg",
+            "landscapes-3.jpg",
+            "landscapes-9.jpg",
+            "landscapes-11.jpg",
+            "landscapes-22.jpg",
+            "landscapes-18.jpg"
+        ];
+
+        const photoFolder = "landscapes";
+        let currentPhotoIndex = 0;
+        let columnHeights = [];
+        let columnCount = 4;
+        let columnWidth = 0;
+        let gutter = 20;
+        let loadedImages = [];
+        let imagesLoaded = 0;
+
+        // Calculate column layout
+        function calculateLayout() {
+            const containerWidth = document.getElementById('photoGrid').offsetWidth;
+            
+            // Determine column count based on screen width
+            if (containerWidth > 1200) {
+                columnCount = 4;
+            } else if (containerWidth > 900) {
+                columnCount = 3;
+            } else if (containerWidth > 600) {
+                columnCount = 2;
+            } else {
+                columnCount = 1;
+            }
+            
+            columnWidth = (containerWidth - (gutter * (columnCount - 1))) / columnCount;
+            columnHeights = new Array(columnCount).fill(0);
+        }
+
+        // Find shortest column
+        function getShortestColumn() {
+            let minHeight = columnHeights[0];
+            let minIndex = 0;
+            
+            for (let i = 1; i < columnHeights.length; i++) {
+                if (columnHeights[i] < minHeight) {
+                    minHeight = columnHeights[i];
+                    minIndex = i;
+                }
+            }
+            
+            return minIndex;
+        }
+
+        // Position a single image
+        function positionImage(item, img, index) {
+            const column = getShortestColumn();
+            const aspectRatio = img.naturalWidth / img.naturalHeight;
+            const itemHeight = columnWidth / aspectRatio;
+            
+            item.style.width = columnWidth + 'px';
+            item.style.height = itemHeight + 'px';
+            item.style.left = column * (columnWidth + gutter) + 'px';
+            item.style.top = columnHeights[column] + 'px';
+            
+            columnHeights[column] += itemHeight + gutter;
+            
+            // Update container height
+            const maxHeight = Math.max(...columnHeights);
+            document.getElementById('photoGrid').style.height = maxHeight + 'px';
+            
+            // Fade in
+            setTimeout(() => {
+                item.classList.add('loaded');
+            }, index * 30); // Staggered animation
+        }
+
+        // Load photos one by one
+        function loadPhotos() {
+            const photoGrid = document.getElementById('photoGrid');
+            photoGrid.innerHTML = '';
+            loadedImages = [];
+            imagesLoaded = 0;
+            
+            calculateLayout();
+            
+            // Hide loading indicator when first image loads
+            let firstImageLoaded = false;
+            
+            photos.forEach((photo, index) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.onclick = () => openLightbox(index);
+                
+                const img = document.createElement('img');
+                img.src = `${photoFolder}/${photo}`;
+                img.alt = photo;
+                
+                img.onload = function() {
+                    if (!firstImageLoaded) {
+                        document.getElementById('loadingIndicator').style.display = 'none';
+                        firstImageLoaded = true;
+                    }
+                    
+                    loadedImages[index] = {
+                        element: photoItem,
+                        img: img,
+                        aspectRatio: img.naturalWidth / img.naturalHeight
+                    };
+                    
+                    positionImage(photoItem, img, imagesLoaded);
+                    imagesLoaded++;
+                };
+                
+                img.onerror = function() { 
+                    this.src = 'placeholder.jpg'; 
+                    this.alt = 'Image not found';
+                    // Still position the placeholder
+                    loadedImages[index] = {
+                        element: photoItem,
+                        img: img,
+                        aspectRatio: 1.5 // Default aspect ratio for placeholder
+                    };
+                    positionImage(photoItem, img, imagesLoaded);
+                    imagesLoaded++;
+                };
+                
+                photoItem.appendChild(img);
+                photoGrid.appendChild(photoItem);
+            });
+        }
+
+        // Reflow all images (for resize)
+        function reflowImages() {
+            calculateLayout();
+            
+            loadedImages.forEach((item, index) => {
+                if (item && item.element && item.img) {
+                    const column = getShortestColumn();
+                    const itemHeight = columnWidth / item.aspectRatio;
+                    
+                    item.element.style.width = columnWidth + 'px';
+                    item.element.style.height = itemHeight + 'px';
+                    item.element.style.left = column * (columnWidth + gutter) + 'px';
+                    item.element.style.top = columnHeights[column] + 'px';
+                    
+                    columnHeights[column] += itemHeight + gutter;
+                }
+            });
+            
+            const maxHeight = Math.max(...columnHeights);
+            document.getElementById('photoGrid').style.height = maxHeight + 'px';
+        }
+
+        // Debounce function for resize events
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Handle window resize
+        const handleResize = debounce(() => {
+            reflowImages();
+        }, 250);
+
+        window.addEventListener('resize', handleResize);
+
+        // Lightbox functions
+        function openLightbox(index) {
+            currentPhotoIndex = index;
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            
+            lightboxImage.src = `${photoFolder}/${photos[index]}`;
+            lightbox.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox(event) {
+            if (event && event.target !== event.currentTarget && 
+                !event.target.classList.contains('lightbox-close')) {
+                return;
+            }
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            currentPhotoIndex += direction;
+            
+            if (currentPhotoIndex < 0) {
+                currentPhotoIndex = photos.length - 1;
+            } else if (currentPhotoIndex >= photos.length) {
+                currentPhotoIndex = 0;
+            }
+            
+            const lightboxImage = document.getElementById('lightboxImage');
+            lightboxImage.src = `${photoFolder}/${photos[currentPhotoIndex]}`;
+            
+            event.stopPropagation();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('lightbox').style.display === 'block') {
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+                if (e.key === 'Escape') closeLightbox();
+            }
+        });
+
+        // Disable drag on images
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+            }
+        });
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', loadPhotos);
+    </script>
+</body>
+</html>
