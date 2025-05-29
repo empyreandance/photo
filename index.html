@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alex Cooke Photography</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 1px solid #222;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        nav {
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        nav a {
+            color: #ccc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+            display: inline-block;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .hero-section {
+            text-align: left;
+            padding: 80px 0;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-text {
+            font-size: 1.1em;
+            color: #aaa;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .services-list {
+            list-style: none;
+            margin: 30px 0;
+            padding-left: 0;
+        }
+
+        .services-list li {
+            font-size: 1.1em;
+            color: #aaa;
+            line-height: 1.8;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .services-list li::before {
+            content: "•";
+            color: #666;
+            position: absolute;
+            left: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #222;
+            margin-top: 100px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1024px) {
+            nav a {
+                margin: 0 10px;
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            nav a {
+                margin: 0 8px;
+                font-size: 0.95em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .hero-text {
+                font-size: 1.05em;
+            }
+
+            .hero-section {
+                padding: 40px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav a {
+                margin: 0 5px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Alex Cooke</h1>
+            <p class="subtitle">Photography</p>
+        </header>
+
+        <nav>
+            <a href="aerial.html">Aerial</a>
+            <a href="baseball.html">Baseball</a>
+            <a href="events.html">Events</a>
+            <a href="landscapes.html">Landscapes</a>
+            <a href="horses.html">Horses</a>
+            <a href="portraits.html">Portraits</a>
+            <a href="weddings.html">Weddings</a>
+            <a href="index.html" class="active">About</a>
+        </nav>
+
+        <div class="hero-section">
+            <p class="hero-text">
+                Based in Cleveland, Ohio, I specialize in capturing moments that tell compelling stories. With over a decade of experience in professional photography, I bring a unique perspective to every project, whether it's documenting the raw emotion of a wedding day, the dynamic energy of sporting events, or the breathtaking beauty of aerial landscapes.
+            </p>
+            <p class="hero-text">
+                My approach combines technical expertise with an artistic eye, ensuring that each image not only meets professional standards but also resonates emotionally. I believe in the power of photography to preserve memories, showcase beauty, and reveal perspectives that might otherwise go unnoticed.
+            </p>
+            <p class="hero-text">
+                Available for:
+            </p>
+            <ul class="services-list">
+                <li>Wedding and engagement photography</li>
+                <li>Corporate events and conferences</li>
+                <li>Professional portraits and headshots</li>
+                <li>Sports and action photography</li>
+                <li>Aerial photography and videography</li>
+                <li>Equestrian events and portraits</li>
+                <li>Landscape and architectural photography</li>
+            </ul>
+            <p class="hero-text">
+                Each project is approached with careful attention to detail and a commitment to exceeding expectations. I work closely with clients to understand their vision and deliver images that capture the essence of their special moments.
+            </p>
+        </div>
+
+        <footer>
+            <p>
+                <a href="contact.html" style="color: #999; text-decoration: none; border-bottom: 1px solid #444; transition: all 0.3s ease;">Contact Me</a>
+                <span style="margin: 0 20px; color: #444;">•</span>
+                &copy; 2025 Alex Cooke. All rights reserved.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
