@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portraits | Alex Cooke Photography</title>
+
+    <!-- ---------- GLOBAL STYLES ---------- -->
+    <style>
+        html,body{
+            margin:0;padding:0;background:#000;color:#eee;
+            font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+            -webkit-font-smoothing:antialiased;
+        }
+        a{color:#eee;text-decoration:none;}
+        a:hover{opacity:.7;}
+        img{border:0;user-select:none;-webkit-user-drag:none;}
+
+        .container{max-width:1400px;margin:0 auto;padding:40px 30px 0;}
+        header{text-align:center;}
+        header h1{margin:0;font-size:2.4em;font-weight:300;letter-spacing:1px;}
+        .subtitle{color:#888;font-size:1.1em;}
+
+        nav{margin:40px 0;text-align:center;}
+        nav a{
+            color:#ccc;margin:0 15px;font-size:1.1em;padding:5px 0;
+            border-bottom:2px solid transparent;
+            transition:color .3s ease,border-bottom-color .3s ease;
+            display:inline-block;
+        }
+        nav a:hover,nav a.active{color:#fff;border-bottom-color:#fff;}
+
+        .content{opacity:0;transform:translateY(20px);animation:fadeIn .6s ease forwards;}
+        @keyframes fadeIn{to{opacity:1;transform:none;}}
+
+        /* ---------- MASONRY GRID ---------- */
+        .photo-grid{position:relative;margin-top:20px;min-height:100px;}
+        .photo-item{
+            position:absolute;overflow:hidden;border-radius:8px;background:#111;
+            cursor:pointer;transition:all .3s ease;border:1px solid #222;
+        }
+        .photo-item:hover{
+            transform:translateY(-5px);box-shadow:0 10px 30px rgba(0,0,0,.5);
+            border-color:#444;z-index:10;
+        }
+        .photo-item img{width:100%;height:auto;display:block;will-change:transform;}
+
+        /* Skeleton placeholder */
+        .photo-item.skeleton{
+            background:linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%);
+            background-size:200% 100%;animation:loading 1.5s infinite;
+        }
+        .photo-item.skeleton::after{
+            content:"";position:absolute;top:50%;left:50%;
+            width:34px;height:34px;margin:-17px;
+            border:3px solid #333;border-top-color:#666;border-radius:50%;
+            animation:spin .8s linear infinite;
+        }
+        @keyframes loading{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+        @keyframes spin{to{transform:rotate(360deg);}}
+
+        .loading-indicator,
+        .error-message{text-align:center;padding:20px;font-size:.9em;}
+        .error-message{color:#ff6b6b;display:none;}
+
+        /* ---------- LIGHTBOX ---------- */
+        .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;cursor:pointer;}
+        .lightbox-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;}
+        .lightbox img{max-width:100%;max-height:100%;object-fit:contain;cursor:default;}
+
+        .lightbox-nav,
+        .lightbox-close{
+            position:fixed;border:none;background:rgba(255,255,255,.1);color:#fff;
+            font-weight:300;cursor:pointer;z-index:2001;transition:background .3s ease;
+        }
+        .lightbox-nav{top:50%;transform:translateY(-50%);padding:20px 15px;font-size:3em;border-radius:4px;}
+        .lightbox-nav:hover{background:rgba(255,255,255,.2);}
+        .lightbox-prev{left:20px;} .lightbox-next{right:20px;}
+
+        .lightbox-close{top:20px;right:30px;font-size:3em;background:none;}
+        .lightbox-close:hover{transform:scale(1.1);}
+
+        footer{text-align:center;padding:40px 0;color:#666;font-size:.9em;border-top:1px solid #222;margin-top:100px;}
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width:1024px){nav a{margin:0 10px;font-size:1em;}}
+        @media (max-width:768px){
+            header h1{font-size:2em;}
+            nav a{margin:0 8px;font-size:.95em;}
+            .container{padding:15px;}
+            .lightbox-content{padding:10px;}
+            .lightbox-nav{padding:15px 10px;font-size:2.5em;}
+            .lightbox-prev{left:10px;} .lightbox-next{right:10px;}
+            .lightbox-close{top:10px;right:15px;font-size:2em;}
+        }
+    </style>
+</head>
+
+<body oncontextmenu="return false;">
+<div class="container">
+    <header>
+        <h1><a href="https://www.alexcooke.co">Alex Cooke</a></h1>
+        <p class="subtitle">Photography</p>
+    </header>
+
+    <nav>
+        <a href="aerial.html">Aerial</a>
+        <a href="baseball.html">Baseball</a>
+        <a href="events.html">Events</a>
+        <a href="horses.html">Horses</a>
+        <a href="landscapes.html">Landscapes</a>
+        <a href="portraits.html" class="active">Portraits</a>
+        <a href="weddings.html">Weddings</a>
+        <a href="index.html">About</a>
+    </nav>
+
+    <div class="content">
+        <div id="loadingIndicator" class="loading-indicator">Loading photos…</div>
+        <div id="errorMessage"    class="error-message"></div>
+        <div id="photoGrid"       class="photo-grid"></div>
+    </div>
+
+    <footer>
+        <p>
+            <a href="contact.html" style="color:#999;text-decoration:none;border-bottom:1px solid #444;transition:all .3s ease;">Contact Me</a>
+            <span style="margin:0 20px;color:#444;">•</span>
+            &copy; 2025 Alex Cooke. All rights reserved.
+        </p>
+    </footer>
+</div>
+
+<!-- ---------- LIGHTBOX ---------- -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <div class="lightbox-content">
+        <img id="lightboxImage" src="" alt="">
+    </div>
+    <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
+    <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+    <button class="lightbox-close"              onclick="closeLightbox()">&times;</button>
+</div>
+
+<!-- ---------- MASONRY + LAZY-LOADING SCRIPT ---------- -->
+<script>
+/* ------------ PHOTO LIST ------------ */
+const photos = [
+  "portraits-84.jpg","portraits-78.jpg","portraits-62.jpg","portraits-39.jpg","portraits-72.jpg",
+  "portraits-47.jpg","portraits-28.jpg","portraits-15.jpg","portraits-8.jpg","portraits-87.jpg",
+  "portraits-68.jpg","portraits-4.jpg","portraits-80.jpg","portraits-63.jpg","portraits-42.jpg",
+  "portraits-40.jpg","portraits-22.jpg","portraits-90.jpg","portraits-32.jpg","portraits-5.jpg",
+  "portraits-45.jpg","portraits-11.jpg","portraits-50.jpg","portraits-24.jpg","portraits-46.jpg",
+  "portraits-58.jpg","portraits-17.jpg","portraits-59.jpg","portraits-23.jpg","portraits-14.jpg",
+  "portraits-77.jpg","portraits-57.jpg","portraits-44.jpg","portraits-9.jpg","portraits-12.jpg",
+  "portraits-51.jpg","portraits-83.jpg","portraits-34.jpg","portraits-41.jpg","portraits-67.jpg",
+  "portraits-93.jpg","portraits-91.jpg","portraits-82.jpg","portraits-88.jpg","portraits-37.jpg",
+  "portraits-65.jpg","portraits-89.jpg","portraits-30.jpg","portraits-75.jpg","portraits-66.jpg",
+  "portraits-71.jpg","portraits-18.jpg","portraits-2.jpg","portraits-20.jpg","portraits-56.jpg",
+  "portraits-16.jpg","portraits-36.jpg","portraits-35.jpg","portraits-7.jpg","portraits-74.jpg",
+  "portraits-10.jpg","portraits-21.jpg","portraits-26.jpg","portraits-61.jpg","portraits-43.jpg",
+  "portraits-55.jpg","portraits-48.jpg","portraits-70.jpg","portraits-52.jpg","portraits-85.jpg",
+  "portraits-19.jpg","portraits-29.jpg","portraits-81.jpg","portraits-3.jpg","portraits-86.jpg",
+  "portraits-92.jpg","portraits-60.jpg","portraits-25.jpg","portraits-76.jpg","portraits-27.jpg",
+  "portraits-31.jpg","portraits-49.jpg","portraits-73.jpg","portraits-54.jpg","portraits-13.jpg",
+  "portraits-33.jpg","portraits-69.jpg","portraits-38.jpg","portraits-6.jpg","portraits-53.jpg",
+  "portraits-64.jpg","portraits-1.jpg","portraits-79.jpg"
+];
+const photoFolder = "portraits";               // sub-directory with the images
+const gutter      = 20;                        // px gap between columns/items
+const minCol      = 280;                       // minimum column width
+
+/* ------------ STATE ------------ */
+let columnCount  = 1,
+    columnWidth  = 0,
+    colHeights   = [],
+    observer,
+    grid         = document.getElementById("photoGrid"),
+    loadingElm   = document.getElementById("loadingIndicator"),
+    errorElm     = document.getElementById("errorMessage");
+
+/* ------------ HELPERS ------------ */
+const debounce = (fn,ms)=>(...a)=>{clearTimeout(fn.t);fn.t=setTimeout(()=>fn(...a),ms)};
+const shortestColumn = () => colHeights.indexOf(Math.min(...colHeights));
+
+/* ------------ LAYOUT ------------ */
+function calculateLayout(){
+    const containerWidth = grid.parentElement.getBoundingClientRect().width;
+    grid.style.width     = containerWidth + "px";                     // **Solution 2**
+    columnCount          = Math.max(1, Math.floor((containerWidth+gutter)/(minCol+gutter)));
+    columnWidth          = (containerWidth - gutter*(columnCount-1)) / columnCount;
+    colHeights           = new Array(columnCount).fill(0);
+}
+
+function positionItem(item){
+    const img     = item.querySelector("img");
+    const ratio   = img.naturalHeight / img.naturalWidth;
+    const height  = columnWidth * ratio;
+    const target  = shortestColumn();
+
+    item.style.width  = columnWidth + "px";
+    item.style.top    = colHeights[target] + "px";
+    item.style.left   = (target * (columnWidth + gutter)) + "px";
+    item.style.height = height + "px";
+
+    colHeights[target] += height + gutter;
+    grid.style.height   = Math.max(...colHeights) + "px";
+}
+
+/* ------------ IMAGE CREATION ------------ */
+function makePhotoItem(src){
+    const div = document.createElement("div");
+    div.className = "photo-item skeleton";
+
+    const img = new Image();
+    img.alt       = "Portrait photograph";
+    img.decoding  = "async";
+    img.loading   = "lazy";
+    img.dataset.src = `${photoFolder}/${src}`;
+
+    div.appendChild(img);
+    grid.appendChild(div);
+
+    // De-skeleton once loaded
+    img.onload = () => {
+        div.classList.remove("skeleton");
+        positionItem(div);
+    };
+    img.onerror = () => div.remove(); // fail silently
+
+    return img;
+}
+
+/* ------------ LAZY LOADING via IntersectionObserver ------------ */
+function initObserver(){
+    observer = new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+            if(entry.isIntersecting){
+                const img = entry.target;
+                img.src = img.dataset.src;        // trigger download
+                observer.unobserve(img);
+            }
+        });
+    }, {rootMargin:"300px"});                     // start 300 px before viewport
+}
+
+/* ------------ LIGHTBOX ------------ */
+let currentIndex = 0;
+function openLightbox(index){
+    currentIndex = index;
+    const lightbox = document.getElementById("lightbox");
+    const img      = document.getElementById("lightboxImage");
+    img.src        = `${photoFolder}/${photos[index]}`;
+    lightbox.style.display = "block";
+}
+function closeLightbox(e){
+    if(e && e.target.id !== "lightbox" && e.target.id !== "lightboxImage") return;
+    document.getElementById("lightbox").style.display = "none";
+}
+function navigateLightbox(dir){
+    currentIndex = (currentIndex + dir + photos.length) % photos.length;
+    document.getElementById("lightboxImage").src = `${photoFolder}/${photos[currentIndex]}`;
+}
+
+/* ------------ INITIALISE ------------ */
+function init(){
+    calculateLayout();
+    initObserver();
+
+    // Build items & start observing
+    photos.forEach((file,i)=>{
+        const img = makePhotoItem(file);
+        observer.observe(img);
+        img.parentElement.addEventListener("click",()=>openLightbox(i));
+    });
+
+    loadingElm.style.display = "none";
+    window.addEventListener("resize", debounce(()=>{
+        calculateLayout();
+        // Re-position every existing item
+        Array.from(document.getElementsByClassName("photo-item")).forEach(positionItem);
+    }, 200));
+}
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
